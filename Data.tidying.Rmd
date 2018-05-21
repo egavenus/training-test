@@ -26,10 +26,39 @@ Data is in wide format, summary column 'all', and notesRegCode should go into me
 unique(catch_df$notesRegCode)
 ```
 
+Selected columns that I wanted, moved from wide to long format, renamed to label catch in thousands.
 ```{r selecting.removing.columns}
 catch_df<-catch_df %>% 
-  select(Region, Year, Chinook, Sockeye, Coho, Pink, Chum)
+  select(Region, Year, Chinook, Sockeye, Coho, Pink, Chum) %>% 
+  gather (key = Species, value = Catch, -Region, -Year) %>% 
+  rename(catch_thousands = Catch)
 
 head(catch_df)
 ```
+Found error in data, corrected it, converted 'catch_thousands' column in numeris, and created a new column with units # of fish.
+
+```{r cleaning.catch}
+catch_df<-catch_df %>% 
+  mutate(catch_thousands = ifelse(catch_thousands== "I", 1, catch_thousands)) %>% 
+  mutate(catch_thousands = as.integer(catch_thousands)) %>% 
+  mutate(Catch = catch_thousands * 1000)
+
+head(catch_df, 30)
+```
+# Analysis
+
+``` {r summarzing}
+catch_df %>% 
+  group_by(Species, Year) %>% 
+  summarize(mean_catch = mean(Catch), num_obs=n())
+```
+
+``` {r filter.group}
+catch_df %>% 
+  filter(Species == "Chinook") %>% 
+  group_by(Region) %>% 
+  summarize(mean_catch = mean(Catch)) %>% # calculate mean catch
+  arrange(desc(mean_catch)) # sort in descending order by catch
+```
+
 
