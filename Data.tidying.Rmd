@@ -1,0 +1,35 @@
+---
+title: "Data Tidying"
+author: "Erika Gavenus"
+date: "May 21, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r packages.libraries}
+library(dplyr)
+library(tidyr)
+```
+
+```{r catch.dataset}
+catch_df <- read.csv(url("https://knb.ecoinformatics.org/knb/d1/mn/v2/object/df35b.302.1", method = "libcurl"),
+                    stringsAsFactors = FALSE)
+
+head(catch_df)
+```
+
+Data is in wide format, summary column 'all', and notesRegCode should go into meta data --will not be analyzed
+```{r}
+unique(catch_df$notesRegCode)
+```
+
+```{r selecting.removing.columns}
+catch_df<-catch_df %>% 
+  select(Region, Year, Chinook, Sockeye, Coho, Pink, Chum)
+
+head(catch_df)
+```
+
