@@ -1,0 +1,94 @@
+---
+title: "Ggplot Example"
+author: "Erika Gavenus"
+date: "May 21, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r libraries}
+suppressPackageStartupMessages({
+  library(ggplot2)
+  library(tidyr)
+  library(dplyr)
+})
+```
+
+``` {r dataframes}
+
+# https://knb.ecoinformatics.org/#view/urn:uuid:e05865d7-678d-4513-9061-2ab7d979f8e7
+# Search 'permit value'
+permits <- read.csv(url("https://knb.ecoinformatics.org/knb/d1/mn/v2/object/urn%3Auuid%3Aa3c58bd6-481e-4c64-aa93-795df10a4664", method = "libcurl"),
+                    stringsAsFactors = FALSE)
+
+```
+
+```{r theme.creation}
+erg_theme <- theme(legend.position= "bottom", axis.text=element_text(angle=45)) # insert this before ggplot
+
+```
+
+
+```{r scatter.plot}
+ggplot(permits, aes(x=Value, y=StdDev, color=Gear, size=Region)) + 
+  geom_point() + erg_theme
+```
+```{r histogram}
+ggplot(permits, aes(x=Value)) +
+  geom_histogram(binwidth=1e4)
+
+```
+
+```{r bristolbay.permit.violin}
+permits.bb<-permits %>%
+  filter(Region=="Bristol Bay")
+
+ggplot(permits.bb, aes(x=Gear, y=Value)) +
+  geom_violin() +
+  geom_point(shape = 1, position = "jitter" )
+```
+```{r permits.smoothed}
+
+ggplot(permits.bb, aes(Value, StdDev)) + 
+  geom_point() +
+  geom_smooth() # uses loess
+
+ggplot(permits.bb, aes(Value, StdDev)) + 
+  geom_point() +
+  geom_smooth(method = "lm")
+
+```
+```{r}
+install.packages("ggthemes")
+library(ggthemes)
+```
+
+```{r permits.barplot}
+permits_sum <- permits %>% 
+  group_by(Gear, Region) %>% 
+  summarize(mean_value = mean(Value, na.rm = T))
+
+ggplot(permits_sum, aes(x = Gear, y = mean_value, fill = Region)) +
+  geom_bar(position = "stack", stat = "identity")
+
+ggplot(permits_sum, aes(x = Gear, y = mean_value, fill = Region)) +
+  geom_bar(position = "dodge", stat = "identity") + 
+  theme_bw () +
+  theme(axis.text.x = element_text(vjust=0.6, angle=45)) +
+  labs (title="Permit Values", 
+        subtitle = "I really want a permit")
+```
+```{r facet.plot}
+ggplot(permits_sum, aes(x = Gear, y = mean_value, fill = Region)) +
+  geom_bar(position = "dodge", stat = "identity") + 
+  theme_bw () +
+  theme(axis.text.x = element_text(vjust=0.6, angle=45)) +
+  labs (title="Permit Values", 
+        subtitle = "I really want a permit") +
+  facet_wrap(~Region, scales="free_y", ncol=2)
+
+```
+
